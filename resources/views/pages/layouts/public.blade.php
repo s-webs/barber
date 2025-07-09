@@ -24,7 +24,7 @@
 <body x-data="menuState">
 <div x-data="stickyHeader">
     <header
-        class="fixed top-0 left-0 w-full z-50 bg-[var(--color-secondary)] z-[5] transition-all duration-300"
+        class="fixed top-0 left-0 w-full bg-[var(--color-secondary)] z-[8] transition-all duration-300"
         :class="{ 'shadow-md': isSticky, 'py-2': isSticky, 'py-4': !isSticky }"
     >
         <div class="container mx-auto px-4">
