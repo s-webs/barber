@@ -34,6 +34,7 @@ use MoonShine\UI\Components\{Breadcrumbs,
 use App\MoonShine\Resources\ServiceResource;
 use MoonShine\MenuManager\MenuItem;
 use App\MoonShine\Resources\BarberResource;
+use App\MoonShine\Resources\ColorResource;
 
 final class MoonShineLayout extends AppLayout
 {
@@ -49,7 +50,8 @@ final class MoonShineLayout extends AppLayout
         return [
             ...parent::menu(),
             MenuItem::make('Услуги', ServiceResource::class),
-            MenuItem::make('Барберы', BarberResource::class),
+            MenuItem::make('Мастера', BarberResource::class),
+            MenuItem::make('Цвета', ColorResource::class),
         ];
     }
 
