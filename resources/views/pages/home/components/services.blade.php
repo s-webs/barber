@@ -18,7 +18,7 @@
             @endforeach
         </div>
         <div class="text-center mt-[50px]">
-            <a href="##" class="block max-w-[300px] mx-auto border-[4px] border-[var(--color-main)] hover:bg-[var(--color-main)] text-[var(--color-main)] hover:text-[var(--color-halftone)] font-semibold px-[30px] py-[5px] lg:py-[20px] transition-colors duration-300">Посмотреть все наши услуги</a>
+            <a href="##" class="block max-w-[380px] mx-auto border-[4px] border-[var(--color-main)] hover:bg-[var(--color-main)] text-[var(--color-main)] hover:text-[var(--color-halftone)] text-lg font-semibold px-[30px] py-[5px] lg:py-[20px] transition-colors duration-300">Посмотреть все наши услуги</a>
         </div>
     </div>
 </div>

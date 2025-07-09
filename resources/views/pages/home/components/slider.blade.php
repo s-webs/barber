@@ -1,4 +1,4 @@
-<div class="py-[40px] lg:py-0 lg:h-[840px] flex items-center justify-center relative">
+<div class="py-[40px] lg:py-0 h-[500px] lg:h-[840px] flex items-center justify-center relative">
     <div class="w-full h-full absolute left-0 top-0 z-[3]">
         <img src="/assets/images/slider-02.jpg" alt="slide 01" class="w-full h-full object-cover">
     </div>

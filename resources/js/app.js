@@ -18,6 +18,16 @@ document.addEventListener('alpine:init', () => {
             Alpine.store('menu').mobileMenuOpen = value
         }
     }))
+
+    Alpine.data('stickyHeader', () => ({
+        isSticky: false,
+        init() {
+            window.addEventListener('scroll', () => {
+                this.isSticky = window.scrollY > 100
+            })
+        },
+    }))
+
 })
 
 Alpine.start()

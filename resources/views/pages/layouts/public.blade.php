@@ -22,53 +22,58 @@
     </style>
 </head>
 <body x-data="menuState">
-<header class="bg-[var(--color-secondary)]">
-    <div class="container mx-auto px-4 py-3">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center">
-                <a href="/">
-                    <img src="/assets/images/logo-demo.png" alt="">
-                </a>
-                <div class="hidden lg:block ml-[20px] px-[7px] border-l-2 border-l-[var(--color-main)]">
-                    <select name="" id=""
-                            class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300">
-                        <option value="">KZ</option>
-                        <option value="" selected>RU</option>
-                        <option value="">EN</option>
-                    </select>
+<div x-data="stickyHeader">
+    <header
+        class="fixed top-0 left-0 w-full z-50 bg-[var(--color-secondary)] transition-all duration-300"
+        :class="{ 'shadow-md': isSticky, 'py-2': isSticky, 'py-4': !isSticky }"
+    >
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/">
+                        <img src="/assets/images/logo-demo.png" alt="">
+                    </a>
+                    <div class="hidden lg:block ml-[20px] px-[7px] border-l-2 border-l-[var(--color-main)]">
+                        <select name="" id=""
+                                class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300">
+                            <option value="">KZ</option>
+                            <option value="" selected>RU</option>
+                            <option value="">EN</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="items-center hidden lg:flex">
+                    <ul class="flex items-center text-md">
+                        <li>
+                            <a href="/"
+                               class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Главная</a>
+                        </li>
+                        <li>
+                            <a href="##"
+                               class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">О
+                                нас</a>
+                        </li>
+                        <li>
+                            <a href="##"
+                               class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Прайс</a>
+                        </li>
+                        <li>
+                            <a href="##"
+                               class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[50px]">Контакты</a>
+                        </li>
+                        <li class="">
+                            <a href="##"
+                               class="text-[var(--color-main)] hover:text-[var(--color-halftone)] font-semibold hover:bg-[var(--color-main)] transition-colors duration-300 border-2 border-[var(--color-main)] px-[20px] py-[6px]">Записаться</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="block lg:hidden">
+                    <i @click="mobileMenuOpen = true" class="ph ph-list text-[var(--color-halftone)] text-3xl"></i>
                 </div>
             </div>
-            <div class="items-center hidden lg:flex">
-                <ul class="flex items-center text-md">
-                    <li>
-                        <a href="/"
-                           class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Главная</a>
-                    </li>
-                    <li>
-                        <a href="##"
-                           class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">О
-                            нас</a>
-                    </li>
-                    <li>
-                        <a href="##"
-                           class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Прайс</a>
-                    </li>
-                    <li>
-                        <a href="##"
-                           class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[50px]">Контакты</a>
-                    </li>
-                    <li class="">
-                        <a href="##"
-                           class="text-[var(--color-main)] hover:text-[var(--color-halftone)] font-semibold hover:bg-[var(--color-main)] transition-colors duration-300 border-2 border-[var(--color-main)] px-[20px] py-[6px]">Записаться</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="block lg:hidden">
-                <i @click="mobileMenuOpen = true" class="ph ph-list text-[var(--color-halftone)] text-3xl"></i>
-            </div>
         </div>
-    </div>
-</header>
+    </header>
+</div>
 {{--MOBILE MENU--}}
 <div
     x-show="mobileMenuOpen"
