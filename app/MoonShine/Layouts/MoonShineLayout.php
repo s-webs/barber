@@ -29,9 +29,11 @@ use MoonShine\UI\Components\{Breadcrumbs,
     Layout\ThemeSwitcher,
     Layout\TopBar,
     Layout\Wrapper,
-    When};
+    When
+};
 use App\MoonShine\Resources\ServiceResource;
 use MoonShine\MenuManager\MenuItem;
+use App\MoonShine\Resources\BarberResource;
 
 final class MoonShineLayout extends AppLayout
 {
@@ -47,6 +49,7 @@ final class MoonShineLayout extends AppLayout
         return [
             ...parent::menu(),
             MenuItem::make('Услуги', ServiceResource::class),
+            MenuItem::make('Барберы', BarberResource::class),
         ];
     }
 

@@ -12,6 +12,7 @@ use MoonShine\UI\Fields\ID;
 use MoonShine\Contracts\UI\FieldContract;
 use MoonShine\Contracts\UI\ComponentContract;
 use MoonShine\UI\Fields\Image;
+use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Text;
 use MoonShine\UI\Fields\Textarea;
 
@@ -31,6 +32,11 @@ class ServiceResource extends ModelResource
     {
         return [
             ID::make()->sortable(),
+            Image::make('Изображение', 'image'),
+            Text::make('Название', 'name')->required()->unescape(),
+            Number::make('Цена', 'price'),
+            Number::make('Цена со скидкой', 'discount'),
+            Number::make('Продолжительность процедуры (в минутах)', 'duration'),
         ];
     }
 
@@ -47,6 +53,9 @@ class ServiceResource extends ModelResource
                 Image::make('Изображение', 'image')
                     ->disk('public')
                     ->dir('uploads/services'),
+                Number::make('Цена', 'price'),
+                Number::make('Цена со скидкой', 'discount'),
+                Number::make('Продолжительность процедуры (в минутах)', 'duration'),
             ])
         ];
     }

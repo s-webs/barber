@@ -21,7 +21,7 @@
         }
     </style>
 </head>
-<body x-data="menuState">
+<body x-data="menuState" class="bg-[var(--color-halftone)]">
 <div x-data="stickyHeader">
     <header
         class="fixed top-0 left-0 w-full bg-[var(--color-secondary)] z-[8] transition-all duration-300"
@@ -128,8 +128,39 @@
     </div>
 </div>
 @yield('content')
-<footer>
-    FOOTER
+<footer class="bg-[var(--color-secondary)] py-[50px]">
+    <div class="container mx-auto p-4">
+        <div class="flex items-center justify-between flex-wrap lg:flex-nowrap">
+            <div class="mx-auto lg:mx-0">
+                <a href="/" class="">
+                    <img src="/assets/images/logo-demo.png" alt="" class="w-[250px]">
+                </a>
+            </div>
+            <div class="mt-[30px] lg:mt-0 text-center lg:text-start">
+                <div
+                    class="text-xl text-[var(--color-main)] font-semibold border-b-[3px] border-b-[var(--color-main)] pb-[10px]">
+                    Адреса и время работы
+                </div>
+                <div class="mt-[20px] text-lg text-[var(--color-halftone)]">Улица Толе би, 164 Алмалинский район,
+                    Алматы,
+                </div>
+            </div>
+            <div class="text-xl font-semibold text-[var(--color-main)] mt-[30px] lg:mt-0  mx-auto lg:mx-0">
+                <a href="##" target="_blank" class="flex items-center mb-[20px]">
+                    <i class="ph ph-instagram-logo"></i>
+                    <span class="ml-2">Instagram</span>
+                </a>
+                <a href="##" target="_blank" class="flex items-center mb-[20px]">
+                    <i class="ph ph-tiktok-logo"></i>
+                    <span class="ml-2">TikTok</span>
+                </a>
+                <a href="##" target="_blank" class="flex items-center">
+                    <i class="ph ph-youtube-logo"></i>
+                    <span class="ml-2">YouTube</span>
+                </a>
+            </div>
+        </div>
+    </div>
 </footer>
 </body>
 </html>
