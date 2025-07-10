@@ -2,11 +2,9 @@
 
 @section('content')
     <div class="h-screen">
-        <div class="text-sm text-gray-400 text-center font-semibold pt-2">
+        <div class="text-[12px] text-gray-400 text-center font-semibold pt-2">
             <a href="https://s-webs.kz" target="_blank">
-                Готовое решение для барбершопа
-                <br/>
-                S-WEBS
+                Готовое решение для барбершопа S-WEBS
             </a>
         </div>
         <div class="flex justify-center items-center container mx-auto px-4 mt-4">
