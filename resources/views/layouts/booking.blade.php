@@ -22,7 +22,7 @@
         }
     </style>
 </head>
-<body class="bg-[var(--color-secondary)]">
+<body class="bg-[var(--color-secondary)] overflow-hidden h-screen">
 @yield('content')
 </body>
 </html>
