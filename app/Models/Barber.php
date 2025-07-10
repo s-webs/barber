@@ -20,7 +20,7 @@ class Barber extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function shedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function schedules()
     {
         return $this->hasMany(Schedule::class);
     }

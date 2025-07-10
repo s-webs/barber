@@ -12,7 +12,7 @@
                 Стрижки, бороды, уход — стиль начинается здесь.
             </h2>
             <div class="mt-[30px]">
-                <a href="##"
+                <a href="{{ route('booking.index') }}"
                    class="border-[4px] border-[var(--color-main)] hover:bg-[var(--color-main)] px-[30px] py-[5px] lg:py-[20px] block max-w-[300px] mx-auto text-lg font-semibold text-[var(--color-main)] hover:text-[var(--color-halftone)] transition-colors duration-300">
                     Забронируйте время
                 </a>

@@ -8,7 +8,7 @@
                     <div class="absolute left-0 top-[30px]">
                         <div
                             class="px-4 py-2 bg-[var(--color-main)] rounded-tr-[15px] rounded-br-[15px] font-semibold text-[var(--color-halftone)] text-lg">
-                            7000 ₸
+                            {{ $item->price  }} ₸
                         </div>
                     </div>
                     <div>
@@ -25,7 +25,7 @@
             @endforeach
         </div>
         <div class="text-center mt-[50px]">
-            <a href="##"
+            <a href="{{ route('services.index') }}"
                class="block max-w-[380px] mx-auto border-[4px] border-[var(--color-main)] hover:bg-[var(--color-main)] text-[var(--color-main)] hover:text-[var(--color-halftone)] text-lg font-semibold px-[30px] py-[5px] lg:py-[20px] transition-colors duration-300">Посмотреть
                 все</a>
         </div>

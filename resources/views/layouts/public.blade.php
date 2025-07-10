@@ -46,24 +46,24 @@
                 <div class="items-center hidden lg:flex">
                     <ul class="flex items-center text-md">
                         <li>
-                            <a href="/"
+                            <a href="{{ route('home.index') }}"
                                class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Главная</a>
                         </li>
                         <li>
-                            <a href="##"
+                            <a href="{{ route('about.index') }}"
                                class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">О
                                 нас</a>
                         </li>
                         <li>
-                            <a href="##"
-                               class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Прайс</a>
+                            <a href="{{ route('services.index') }}"
+                               class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[20px]">Услуги</a>
                         </li>
                         <li>
-                            <a href="##"
+                            <a href="{{ route('contacts.index') }}"
                                class="text-[var(--color-halftone)] hover:text-[var(--color-main)] font-semibold transition-colors duration-300 mr-[50px]">Контакты</a>
                         </li>
                         <li class="">
-                            <a href="##"
+                            <a href="{{ route('booking.index') }}"
                                class="text-[var(--color-main)] hover:text-[var(--color-halftone)] font-semibold hover:bg-[var(--color-main)] transition-colors duration-300 border-2 border-[var(--color-main)] px-[20px] py-[6px]">Записаться</a>
                         </li>
                     </ul>
@@ -104,25 +104,25 @@
             </div>
         </div>
         <div class="mt-[15px] text-center">
-            <a href="/"
+            <a href="{{ route('booking.index') }}"
                class="block border-[2px] border-[var(--color-main)] px-[10px] py-[5px] text-[var(--color-secondary)] hover:text-[var(--color-main)] bg-[var(--color-main)] hover:bg-[var(--color-secondary)] transition-colors duration-300 mb-[20px]">Записаться</a>
         </div>
         <ul class="">
             <li>
-                <a href="/"
+                <a href="{{ route('home.index') }}"
                    class="block border-[2px] border-[var(--color-main)] px-[10px] py-[5px] text-[var(--color-main)] hover:bg-[var(--color-main)] hover:text-[var(--color-secondary)] transition-colors duration-300 mb-[20px]">Главная</a>
             </li>
             <li>
-                <a href="/"
+                <a href="{{ route('about.index') }}"
                    class="block border-[2px] border-[var(--color-main)] px-[10px] py-[5px] text-[var(--color-main)] hover:bg-[var(--color-main)] hover:text-[var(--color-secondary)] transition-colors duration-300 mb-[20px]">О
                     нас</a>
             </li>
             <li>
-                <a href="/"
-                   class="block border-[2px] border-[var(--color-main)] px-[10px] py-[5px] text-[var(--color-main)] hover:bg-[var(--color-main)] hover:text-[var(--color-secondary)] transition-colors duration-300 mb-[20px]">Прайс</a>
+                <a href="{{ route('services.index') }}"
+                   class="block border-[2px] border-[var(--color-main)] px-[10px] py-[5px] text-[var(--color-main)] hover:bg-[var(--color-main)] hover:text-[var(--color-secondary)] transition-colors duration-300 mb-[20px]">Услуги</a>
             </li>
             <li>
-                <a href="/"
+                <a href="{{ route('contacts.index') }}"
                    class="block border-[2px] border-[var(--color-main)] px-[10px] py-[5px] text-[var(--color-main)] hover:bg-[var(--color-main)] hover:text-[var(--color-secondary)] transition-colors duration-300">Контакты</a>
             </li>
         </ul>
