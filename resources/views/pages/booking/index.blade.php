@@ -1,7 +1,7 @@
 @extends('layouts.booking')
 
 @section('content')
-    <div class="h-screen flex justify-center items-center container mx-auto p-4">
+    <div class="h-screen flex justify-center items-center container mx-auto py-8 px-4">
         <div class="bg-[var(--color-halftone)] w-full max-w-3xl h-[90%] rounded-[15px] flex flex-col overflow-hidden">
             <div x-data="bookingForm()" x-init="init()" class="flex flex-col flex-1 overflow-hidden relative">
                 <!-- Лоадер -->
