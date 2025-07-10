@@ -1,4 +1,4 @@
-@extends('pages.layouts.public')
+@extends('layouts.public')
 
 @section('content')
     @include('pages.home.components.slider')

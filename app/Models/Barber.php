@@ -14,4 +14,14 @@ class Barber extends Model
     {
         return $this->belongsToMany(Service::class);
     }
+
+    public function branch(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function shedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
 }

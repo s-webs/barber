@@ -14,6 +14,8 @@ use App\MoonShine\Resources\MoonShineUserRoleResource;
 use App\MoonShine\Resources\ServiceResource;
 use App\MoonShine\Resources\BarberResource;
 use App\MoonShine\Resources\ColorResource;
+use App\MoonShine\Resources\BranchResource;
+use App\MoonShine\Resources\ScheduleResource;
 
 class MoonShineServiceProvider extends ServiceProvider
 {
@@ -31,6 +33,8 @@ class MoonShineServiceProvider extends ServiceProvider
                 ServiceResource::class,
                 BarberResource::class,
                 ColorResource::class,
+                BranchResource::class,
+                ScheduleResource::class,
             ])
             ->pages([
                 ...$config->getPages(),

@@ -7,7 +7,9 @@ namespace App\MoonShine\Resources;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Barber;
 
+use MoonShine\Laravel\Fields\Relationships\BelongsTo;
 use MoonShine\Laravel\Fields\Relationships\BelongsToMany;
+use MoonShine\Laravel\Fields\Relationships\HasMany;
 use MoonShine\Laravel\Resources\ModelResource;
 use MoonShine\UI\Components\Layout\Box;
 use MoonShine\UI\Fields\ID;
@@ -27,7 +29,7 @@ class BarberResource extends ModelResource
 {
     protected string $model = Barber::class;
 
-    protected string $title = 'Барберы';
+    protected string $title = 'Мастера';
 
     /**
      * @return list<FieldContract>
@@ -37,6 +39,7 @@ class BarberResource extends ModelResource
         return [
             ID::make()->sortable(),
             Image::make('Фото', 'photo'),
+            BelongsTo::make('Салон', 'branch', 'name', resource: BranchResource::class),
             Text::make('Имя', 'name'),
             Text::make('Уровень', 'level'),
             BelongsToMany::make('Услуги', 'services', 'name', resource: ServiceResource::class)->onlyCount(),
@@ -52,6 +55,7 @@ class BarberResource extends ModelResource
         return [
             Box::make([
                 ID::make(),
+                BelongsTo::make('Салон', 'branch', 'name', resource: BranchResource::class),
                 Text::make('Имя', 'name'),
                 Text::make('Уровень', 'level'),
                 Image::make('Фото', 'photo')
@@ -71,6 +75,8 @@ class BarberResource extends ModelResource
                     ->removable(),
                 BelongsToMany::make('Услуги', 'services', 'name', resource: ServiceResource::class)
                     ->selectMode(),
+                HasMany::make('Расписание', 'shedules', 'day_of_week', resource: ScheduleResource::class)
+                    ->creatable(),
                 Switcher::make('Работает', 'is_enabled')
             ])
         ];

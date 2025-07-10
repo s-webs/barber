@@ -32,9 +32,12 @@ use MoonShine\UI\Components\{Breadcrumbs,
     When
 };
 use App\MoonShine\Resources\ServiceResource;
+use MoonShine\MenuManager\MenuGroup;
 use MoonShine\MenuManager\MenuItem;
 use App\MoonShine\Resources\BarberResource;
 use App\MoonShine\Resources\ColorResource;
+use App\MoonShine\Resources\BranchResource;
+use App\MoonShine\Resources\ScheduleResource;
 
 final class MoonShineLayout extends AppLayout
 {
@@ -49,9 +52,12 @@ final class MoonShineLayout extends AppLayout
     {
         return [
             ...parent::menu(),
+            MenuItem::make('Салоны', BranchResource::class),
             MenuItem::make('Услуги', ServiceResource::class),
             MenuItem::make('Мастера', BarberResource::class),
-            MenuItem::make('Цвета', ColorResource::class),
+            MenuGroup::make('Настройки', [
+                MenuItem::make('Цвета', ColorResource::class),
+            ]),
         ];
     }
 
