@@ -125,10 +125,9 @@
                                 : 'bg-white text-black hover:bg-gray-100'"
                                                     class="block w-full text-left px-4 py-2 border border-gray-300 rounded"
                                                 >
-                                                    <div class="flex justify-between items-center">
-                                                        <span x-text="service.name" class=""></span>
-                                                        <span class="font-semibold shrink-0 ml-2"
-                                                              x-text="service.price + ' ₸'"></span>
+                                                    <div class="flex justify-between items-center text-sm">
+                                                        <div class="pr-2" x-text="service.name"></div>
+                                                        <div class="font-semibold whitespace-nowrap" x-text="service.price + ' ₸'"></div>
                                                     </div>
                                                 </button>
                                             </template>
@@ -177,11 +176,11 @@
                                     : 'bg-white text-black hover:bg-gray-100'"
                                                         class="block w-full text-left px-4 py-2 border border-gray-300 rounded"
                                                     >
-                                                        <div class="flex justify-between items-center">
-                                                            <span x-text="service.name"></span>
-                                                            <span class="font-semibold"
-                                                                  x-text="service.price + ' ₸'"></span>
+                                                        <div class="flex justify-between items-center text-sm">
+                                                            <div class="pr-2" x-text="service.name"></div>
+                                                            <div class="font-semibold whitespace-nowrap" x-text="service.price + ' ₸'"></div>
                                                         </div>
+
                                                     </button>
                                                 </template>
                                             </div>
