@@ -13,12 +13,12 @@ class TelegramBotService
         $this->telegram = new Api(config('services.telegram.bot_token'));
     }
 
-    public function sendMessage($chatId, $text)
+    public function sendMessage($chatId, $text, array $params = [])
     {
-        return $this->telegram->sendMessage([
+        return $this->telegram->sendMessage(array_merge([
             'chat_id' => $chatId,
             'text' => $text,
-        ]);
+        ], $params));
     }
 
     public function getUpdates()
