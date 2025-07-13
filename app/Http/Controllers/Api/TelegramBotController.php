@@ -46,17 +46,18 @@ class TelegramBotController extends Controller
 
         // 🔘 Отправим приветствие и клавиатуру
         $keyboard = Keyboard::make()->inline()
-            ->row(
+            ->row([
                 Keyboard::inlineButton([
                     'text' => '📌 Записаться',
                     'url' => route('booking.index')
                 ])
-            )->row(
+            ])
+            ->row([
                 Keyboard::inlineButton([
                     'text' => '📅 Мои записи',
                     'callback_data' => 'send_phone'
                 ])
-            );
+            ]);
 
         $this->telegram->sendMessage(
             $chatId,
