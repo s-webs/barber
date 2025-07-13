@@ -19,7 +19,7 @@
             <a href="https://s-webs.kz" target="_blank">Готовое решение для барбершопа S-WEBS</a>
         </div>
 
-        <div class="flex-grow flex justify-center items-center px-4">
+        <div class="flex-grow flex justify-center items-center px-4 mt-2">
             <div
                 class="bg-[var(--color-halftone)] w-full max-w-3xl rounded-[15px] flex flex-col overflow-hidden">
                 <div x-data="bookingForm()" x-init="init()" x-effect="step === 6 && initPhoneMask()"
