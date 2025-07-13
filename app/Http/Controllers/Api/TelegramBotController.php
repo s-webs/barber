@@ -18,7 +18,7 @@ class TelegramBotController extends Controller
 
     public function webhook(Request $request)
     {
-        $update = Telegram::getWebhookUpdate(); // корректно получаем update от Telegram Webhook
+        $update = $this->telegram::getWebhookUpdate(); // корректно получаем update от Telegram Webhook
 
         $message = $update->getMessage();
         if (!$message) {
@@ -37,7 +37,7 @@ class TelegramBotController extends Controller
                 ->get();
 
             if ($appointments->isEmpty()) {
-                Telegram::sendMessage([
+                $this->telegram::sendMessage([
                     'chat_id' => $chatId,
                     'text' => "Записей с номером {$formattedPhone} не найдено."
                 ]);
@@ -57,13 +57,13 @@ class TelegramBotController extends Controller
                     $reply .= "💈 Услуги: {$services}\n\n";
                 }
 
-                Telegram::sendMessage([
+                $this->telegram::sendMessage([
                     'chat_id' => $chatId,
                     'text' => $reply
                 ]);
             }
         } else {
-            Telegram::sendMessage([
+            $this->telegram::sendMessage([
                 'chat_id' => $chatId,
                 'text' => "Привет! Пожалуйста, отправьте номер телефона в формате +77007102135 без пробелов, чтобы получить свои записи."
             ]);
