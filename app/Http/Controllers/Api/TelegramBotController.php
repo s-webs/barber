@@ -188,7 +188,10 @@ class TelegramBotController extends Controller
 
     protected function sendAppointments($chatId, $phone)
     {
-        $appointments = Appointment::where('client_phone', $phone)->orderBy('date')->get();
+        $appointments = Appointment::with(['barber', 'services'])
+            ->where('client_phone', $phone)
+            ->orderBy('date')
+            ->get();
 
         if ($appointments->isEmpty()) {
             $this->telegram->sendMessage([
@@ -202,9 +205,15 @@ class TelegramBotController extends Controller
         foreach ($appointments as $appointment) {
             $date = \Carbon\Carbon::parse($appointment->date)->format('d.m.y');
             $time = \Carbon\Carbon::parse($appointment->time)->format('H:i');
+
             $messageText .= "📅 *{$date}* в 🕒 *{$time}*\n";
-            $messageText .= "👤 {$appointment->client_name}\n";
-            $messageText .= "📞 {$appointment->client_phone}\n";
+            $messageText .= "🧔 Мастер: *" . optional($appointment->barber)->name . "*\n";
+            $messageText .= "💈 Услуги:\n";
+
+            foreach ($appointment->services as $service) {
+                $messageText .= "• {$service->name} ({$service->pivot->price}₸)\n";
+            }
+
             $messageText .= "────────────\n";
         }
 
