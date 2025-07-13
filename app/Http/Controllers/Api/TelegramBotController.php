@@ -204,7 +204,7 @@ class TelegramBotController extends Controller
 
     protected function sendBarberAppointments($chatId, Barber $barber)
     {
-        $appointments = $barber->appointments()->whereDate('date', '>=', now())->orderBy('date')->get();
+        $appointments = $barber->appointments->whereDate('date', '>=', now())->orderBy('date')->get();
 
         if ($appointments->isEmpty()) {
             $this->telegram->sendMessage([
