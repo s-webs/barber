@@ -293,10 +293,15 @@ class TelegramBotController extends Controller
         ]);
     }
 
-    protected function formatPhoneLikeInDb($phone)
+    private function formatPhoneLikeInDb(string $input): string
     {
-        $phone = preg_replace('/\D/', '', $phone);
-        return '7' . substr($phone, -10); // Пример: 77071234567
+        $digits = preg_replace('/\D+/', '', $input);
+
+        if (strlen($digits) === 11 && str_starts_with($digits, '7')) {
+            return '+7 ' . substr($digits, 1, 3) . ' ' . substr($digits, 4, 3) . ' ' . substr($digits, 7, 4);
+        }
+
+        return $input;
     }
 
     protected function handleChangePhotoCommand($chatId)
