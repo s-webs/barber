@@ -255,7 +255,7 @@ class TelegramBotController extends Controller
 
         // 🖼 Фото профиля
         if ($barber->photo) {
-            $photoPath = public_path('uploads/barbers/' . $barber->photo);
+            $photoPath = public_path($barber->photo); // ❗ без добавления 'uploads/barbers/'
 
             if (file_exists($photoPath)) {
                 $this->telegram->sendPhoto([
