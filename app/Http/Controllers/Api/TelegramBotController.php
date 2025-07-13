@@ -244,7 +244,7 @@ class TelegramBotController extends Controller
         $caption .= "📍 Филиал: " . optional($barber->branch)->name . "\n";
 
         if ($barber->photo) {
-            $photoUrl = asset('uploads/barbers/' . $barber->photo);
+            $photoUrl = public_path($barber->photo);
 
             $this->telegram->sendPhoto([
                 'chat_id' => $chatId,
