@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Services\TelegramBotService;
+use Illuminate\Support\Carbon;
 use Telegram\Bot\Keyboard\Keyboard;
 
 class TelegramBotController extends Controller
@@ -46,11 +47,10 @@ class TelegramBotController extends Controller
         // 🔘 Отправим приветствие и клавиатуру
         $keyboard = Keyboard::make([
             'keyboard' => [
-                ['📅 Мои записи'],
                 [Keyboard::button([
-                    'text' => '📱 Отправить номер',
+                    'text' => '📅 Мои записи',
                     'request_contact' => true,
-                ])]
+                ])],
             ],
             'resize_keyboard' => true,
             'one_time_keyboard' => false,
@@ -78,13 +78,14 @@ class TelegramBotController extends Controller
 
             foreach ($appointments as $appointment) {
                 $time = $appointment->time;
+                $date = Carbon::parse($appointment->date)->format('d.m.Y');
                 $status = $appointment->status;
 
                 $services = $appointment->services->map(function ($service) {
                     return $service->name . " ({$service->pivot->price} тг, {$service->pivot->duration} мин)";
                 })->implode(", ");
 
-                $reply .= "📅 Дата/время: {$time}\n";
+                $reply .= "📅 Дата: {$date}, время: {$time}\n";
                 $reply .= "📌 Статус: {$status}\n";
                 $reply .= "💈 Услуги: {$services}\n\n";
             }
