@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Services\TelegramBotService;
+use Telegram\Bot\Keyboard\Keyboard;
 
 class TelegramBotController extends Controller
 {
