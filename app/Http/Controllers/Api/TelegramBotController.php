@@ -8,6 +8,7 @@ use App\Models\Barber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Telegram\Bot\Api;
+use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
 
 class TelegramBotController extends Controller
@@ -247,7 +248,7 @@ class TelegramBotController extends Controller
 
             $this->telegram->sendPhoto([
                 'chat_id' => $chatId,
-                'photo' => $photoUrl,
+                'photo' => InputFile::create($photoUrl),
                 'caption' => $caption,
                 'parse_mode' => 'Markdown',
             ]);
