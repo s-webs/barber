@@ -6,11 +6,10 @@
             <a href="https://s-webs.kz" target="_blank">Готовое решение для барбершопа S-WEBS</a>
         </div>
 
-        <div class="flex justify-center items-center h-full container mx-auto px-4 mt-4">
+        <div class="flex justify-center items-center container mx-auto px-4 mt-4">
             <div
-                class="bg-[var(--color-halftone)] w-full max-w-3xl rounded-[15px] flex flex-col overflow-hidden">
-                <div x-data="bookingForm()" x-init="init()" x-effect="step === 6 && initPhoneMask()"
-                     class="flex flex-col flex-1 overflow-hidden relative">
+                class="bg-[var(--color-halftone)] w-full max-w-3xl h-[90%] rounded-[15px] flex flex-col overflow-hidden">
+                <div x-data="bookingForm()" x-init="init()" class="flex flex-col flex-1 overflow-hidden relative">
 
                     <!-- Лоадер -->
                     <div x-show="loading"
@@ -254,8 +253,7 @@
                                             <li x-text="getServiceName(serviceId) + ' - ' + getServicePrice(serviceId) + ' ₸'"></li>
                                         </template>
                                     </ul>
-                                    <p class="mt-2"><strong>Общая стоимость:</strong> <span
-                                            x-text="getTotalPrice() + ' ₸'"></span></p>
+                                    <p class="mt-2"><strong>Общая стоимость:</strong> <span x-text="getTotalPrice() + ' ₸'"></span></p>
                                     <p><strong>Дата:</strong> <span x-text="selected_date"></span></p>
                                     <p><strong>Время:</strong> <span x-text="selected_time"></span></p>
 
@@ -268,15 +266,10 @@
 
                                     <div class="mt-3">
                                         <label class="block mb-2 font-medium">Телефон</label>
-                                        <input
-                                            id="phone-input"
-                                            type="tel"
-                                            x-model="customer_phone"
-                                            class="w-full px-3 py-2 border rounded"
-                                            placeholder="+7 (___) ___-__-__"
-                                        >
+                                        <input type="tel" x-model="customer_phone"
+                                               class="w-full px-3 py-2 border rounded"
+                                               placeholder="+7 (999) 999-99-99">
                                     </div>
-
                                 </div>
                             </template>
                         </div>

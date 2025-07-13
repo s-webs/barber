@@ -75,7 +75,7 @@ class BarberResource extends ModelResource
                     ->removable(),
                 BelongsToMany::make('Услуги', 'services', 'name', resource: ServiceResource::class)
                     ->selectMode(),
-                HasMany::make('Расписание', 'shedules', 'day_of_week', resource: ScheduleResource::class)
+                HasMany::make('Расписание', 'schedules', 'day_of_week', resource: ScheduleResource::class)
                     ->creatable(),
                 Switcher::make('Работает', 'is_enabled')
             ])

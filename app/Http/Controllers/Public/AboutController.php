@@ -9,6 +9,6 @@ class AboutController extends Controller
 {
     public function index()
     {
-        dd('ABOUT');
+        return view('pages.about.index');
     }
 }

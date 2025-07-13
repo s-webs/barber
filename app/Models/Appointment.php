@@ -11,6 +11,8 @@ class Appointment extends Model
         'barber_id',
         'date',
         'time',
+        'start_time',
+        'end_time',
         'total_duration',
         'total_price',
         'client_name',
