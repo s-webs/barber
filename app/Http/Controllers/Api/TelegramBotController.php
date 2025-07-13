@@ -91,12 +91,55 @@ class TelegramBotController extends Controller
             return response()->json(['status' => 'ok'], 200);
         }
 
+        if ($text === '👥 Мои клиенты') {
+            $barber = \App\Models\Barber::where('telegram_chat_id', $chatId)->first();
+
+            if (!$barber) {
+                $this->telegram->sendMessage($chatId, "❗ Вы не авторизованы. Нажмите 🧔 Авторизация для мастера и отправьте ваш токен.");
+                return response()->json(['status' => 'not authorized'], 200);
+            }
+
+            // Получим записи на сегодня
+            $today = now()->toDateString();
+
+            $appointments = \App\Models\Appointment::where('barber_id', $barber->id)
+                ->where('date', $today)
+                ->orderBy('time')
+                ->take(10)
+                ->get();
+
+            if ($appointments->isEmpty()) {
+                $this->telegram->sendMessage($chatId, "📭 На сегодня у вас нет записей.");
+                return response()->json(['status' => 'no clients'], 200);
+            }
+
+            $messageText = "👥 Ваши клиенты на *" . now()->format('d.m.Y') . "*:\n\n";
+
+            foreach ($appointments as $appointment) {
+                $date = \Carbon\Carbon::parse($appointment->date)->format('d.m.y');
+                $time = \Carbon\Carbon::parse($appointment->time)->format('H:i');
+
+                $messageText .= "📅 *{$date}* в 🕒 *{$time}*\n";
+                $messageText .= "👤 {$appointment->client_name}\n";
+                $messageText .= "📞 {$appointment->client_phone}\n";
+
+                $messageText .= "────────────\n";
+            }
+
+            $this->telegram->sendMessage($chatId, $messageText, [
+                'parse_mode' => 'Markdown'
+            ]);
+
+            return response()->json(['status' => 'ok'], 200);
+        }
+
         // 👋 Стартовое сообщение и меню
         $keyboard = Keyboard::make([
             'keyboard' => [
                 ['📌 Записаться'],
                 ['📅 Мои записи'],
                 ['🧔 Авторизация для мастера'],
+                ['👥 Мои клиенты'],
             ],
             'resize_keyboard' => true,
             'one_time_keyboard' => false,
