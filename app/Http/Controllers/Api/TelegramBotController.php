@@ -18,7 +18,7 @@ class TelegramBotController extends Controller
 
     public function webhook(Request $request)
     {
-        $update = $this->telegram->getUpdates(); // используем Webhook update
+        $update = $this->telegram->getUpdates();
 
         $message = $update->getMessage();
         if (!$message) {
@@ -26,56 +26,82 @@ class TelegramBotController extends Controller
         }
 
         $chatId = $message->getChat()->getId();
+
+        // 📱 Если пользователь отправил контакт (через кнопку "Отправить номер")
+        if ($message->has('contact')) {
+            $phone = $message->getContact()->getPhoneNumber();
+            $formattedPhone = $this->formatPhoneLikeInDb($phone);
+            return $this->sendAppointments($chatId, $formattedPhone);
+        }
+
         $text = trim($message->getText());
 
-        // Удалим пробелы и проверим, похоже ли это на номер
+        // 🟢 Если текст похож на номер телефона
         if (preg_match('/^\+?\d{10,12}$/', preg_replace('/\s+/', '', $text))) {
             $formattedPhone = $this->formatPhoneLikeInDb($text);
+            return $this->sendAppointments($chatId, $formattedPhone);
+        }
 
-            $appointments = Appointment::with('services')
-                ->where('client_phone', $formattedPhone)
-                ->get();
+        // 🔘 Отправим приветствие и клавиатуру
+        $keyboard = Keyboard::make([
+            'keyboard' => [
+                ['📅 Мои записи'],
+                [Keyboard::button([
+                    'text' => '📱 Отправить номер',
+                    'request_contact' => true,
+                ])]
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false,
+        ]);
 
-            if ($appointments->isEmpty()) {
-                $this->telegram->sendMessage($chatId, "Записей с номером {$formattedPhone} не найдено.");
-            } else {
-                $reply = "Ваши записи:\n\n";
+        $this->telegram->sendMessage(
+            $chatId,
+            "Привет! Чтобы посмотреть свои записи, отправьте номер вручную или нажмите кнопку ниже:",
+            ['reply_markup' => $keyboard]
+        );
 
-                foreach ($appointments as $appointment) {
-                    $time = $appointment->time;
-                    $status = $appointment->status;
+        return response()->json(['status' => 'ok'], 200);
+    }
 
-                    $services = $appointment->services->map(function ($service) {
-                        return $service->name . " ({$service->pivot->price} тг, {$service->pivot->duration} мин)";
-                    })->implode(", ");
+    private function sendAppointments($chatId, string $formattedPhone)
+    {
+        $appointments = Appointment::with('services')
+            ->where('client_phone', $formattedPhone)
+            ->get();
 
-                    $reply .= "📅 Дата/время: {$time}\n";
-                    $reply .= "📌 Статус: {$status}\n";
-                    $reply .= "💈 Услуги: {$services}\n\n";
-                }
-
-                $this->telegram->sendMessage($chatId, $reply);
-            }
+        if ($appointments->isEmpty()) {
+            $this->telegram->sendMessage($chatId, "Записей с номером {$formattedPhone} не найдено.");
         } else {
-            $this->telegram->sendMessage($chatId, "Привет! Пожалуйста, отправьте номер телефона в формате +77007102135 (без пробелов), чтобы получить свои записи.");
+            $reply = "Ваши записи:\n\n";
+
+            foreach ($appointments as $appointment) {
+                $time = $appointment->time;
+                $status = $appointment->status;
+
+                $services = $appointment->services->map(function ($service) {
+                    return $service->name . " ({$service->pivot->price} тг, {$service->pivot->duration} мин)";
+                })->implode(", ");
+
+                $reply .= "📅 Дата/время: {$time}\n";
+                $reply .= "📌 Статус: {$status}\n";
+                $reply .= "💈 Услуги: {$services}\n\n";
+            }
+
+            $this->telegram->sendMessage($chatId, $reply);
         }
 
         return response()->json(['status' => 'ok'], 200);
     }
 
-    /**
-     * Приводит номер к формату, в котором он хранится в базе: +7 700 710 2135
-     */
     private function formatPhoneLikeInDb(string $input): string
     {
-        // Удалим всё, кроме цифр
         $digits = preg_replace('/\D+/', '', $input);
 
-        // Преобразуем в формат +7 700 710 2135
         if (strlen($digits) === 11 && str_starts_with($digits, '7')) {
             return '+7 ' . substr($digits, 1, 3) . ' ' . substr($digits, 4, 3) . ' ' . substr($digits, 7, 4);
         }
 
-        return $input; // fallback, если номер нераспознан
+        return $input;
     }
 }
