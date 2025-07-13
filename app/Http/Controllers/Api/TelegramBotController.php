@@ -240,27 +240,44 @@ class TelegramBotController extends Controller
     {
         $caption = "*Профиль мастера*\n\n";
         $caption .= "👤 *{$barber->name}*\n";
-        $caption .= "📱 {$barber->phone}\n";
         $caption .= "📍 Филиал: " . optional($barber->branch)->name . "\n";
 
-        if ($barber->photo) {
-            $photoUrl = public_path($barber->photo);
-
-            $this->telegram->sendPhoto([
-                'chat_id' => $chatId,
-                'photo' => InputFile::create($photoUrl),
-                'caption' => $caption,
-                'parse_mode' => 'Markdown',
-            ]);
+        // 🛠 Услуги мастера
+        $services = $barber->services;
+        if ($services->isNotEmpty()) {
+            $caption .= "\n💈 *Услуги:*\n";
+            foreach ($services as $service) {
+                $caption .= "• {$service->name} — {$service->price}₸\n";
+            }
         } else {
-            $caption .= "🖼 Фото: _не загружено_";
-
-            $this->telegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => $caption,
-                'parse_mode' => 'Markdown',
-            ]);
+            $caption .= "\n💈 Услуги не указаны\n";
         }
+
+        // 🖼 Фото профиля
+        if ($barber->photo) {
+            $photoPath = public_path('uploads/barbers/' . $barber->photo);
+
+            if (file_exists($photoPath)) {
+                $this->telegram->sendPhoto([
+                    'chat_id' => $chatId,
+                    'photo' => InputFile::create($photoPath),
+                    'caption' => $caption,
+                    'parse_mode' => 'Markdown',
+                ]);
+                return;
+            } else {
+                $caption .= "\n⚠️ *Фото не найдено*";
+            }
+        } else {
+            $caption .= "\n🖼 Фото: _не загружено_";
+        }
+
+        // Fallback: текстовое сообщение
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => $caption,
+            'parse_mode' => 'Markdown',
+        ]);
     }
 
     protected function formatPhoneLikeInDb($phone)
