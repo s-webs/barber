@@ -330,7 +330,7 @@ class TelegramBotController extends Controller
         // Получаем файл Telegram
         $file = $this->telegram->getFile(['file_id' => $photoId]);
         $filePath = $file->getFilePath();
-        $url = "https://api.telegram.org/file/bot" . config('telegram.bots.mybot.token') . "/$filePath";
+        $url = "https://api.telegram.org/file/bot" . config('services.telegram.bot_token') . "/$filePath";
 
         // Генерируем имя
         $filename = uniqid() . '.jpg';
