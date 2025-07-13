@@ -9,7 +9,7 @@ use App\Services\TelegramBotService;
 
 class TelegramBotController extends Controller
 {
-    protected $telegram;
+    protected TelegramBotService $telegram;
 
     public function __construct(TelegramBotService $telegram)
     {
@@ -18,7 +18,7 @@ class TelegramBotController extends Controller
 
     public function webhook(Request $request)
     {
-        $update = $this->telegram::getWebhookUpdate(); // корректно получаем update от Telegram Webhook
+        $update = $this->telegram->getWebhookUpdate(); // используем Webhook update
 
         $message = $update->getMessage();
         if (!$message) {
@@ -28,7 +28,7 @@ class TelegramBotController extends Controller
         $chatId = $message->getChat()->getId();
         $text = trim($message->getText());
 
-        // Удаляем все пробелы и проверяем, похоже ли это на номер
+        // Удалим пробелы и проверим, похоже ли это на номер
         if (preg_match('/^\+?\d{10,12}$/', preg_replace('/\s+/', '', $text))) {
             $formattedPhone = $this->formatPhoneLikeInDb($text);
 
@@ -37,10 +37,7 @@ class TelegramBotController extends Controller
                 ->get();
 
             if ($appointments->isEmpty()) {
-                $this->telegram::sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => "Записей с номером {$formattedPhone} не найдено."
-                ]);
+                $this->telegram->sendMessage($chatId, "Записей с номером {$formattedPhone} не найдено.");
             } else {
                 $reply = "Ваши записи:\n\n";
 
@@ -57,25 +54,21 @@ class TelegramBotController extends Controller
                     $reply .= "💈 Услуги: {$services}\n\n";
                 }
 
-                $this->telegram::sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => $reply
-                ]);
+                $this->telegram->sendMessage($chatId, $reply);
             }
         } else {
-            $this->telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text' => "Привет! Пожалуйста, отправьте номер телефона в формате +77007102135 без пробелов, чтобы получить свои записи."
-            ]);
+            $this->telegram->sendMessage($chatId, "Привет! Пожалуйста, отправьте номер телефона в формате +77007102135 (без пробелов), чтобы получить свои записи.");
         }
 
         return response()->json(['status' => 'ok'], 200);
     }
 
-    // Вспомогательный метод
+    /**
+     * Приводит номер к формату, в котором он хранится в базе: +7 700 710 2135
+     */
     private function formatPhoneLikeInDb(string $input): string
     {
-        // Оставим только цифры
+        // Удалим всё, кроме цифр
         $digits = preg_replace('/\D+/', '', $input);
 
         // Преобразуем в формат +7 700 710 2135
@@ -83,8 +76,6 @@ class TelegramBotController extends Controller
             return '+7 ' . substr($digits, 1, 3) . ' ' . substr($digits, 4, 3) . ' ' . substr($digits, 7, 4);
         }
 
-        return $input; // fallback
+        return $input; // fallback, если номер нераспознан
     }
-
-
 }
