@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Barber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Api;
 use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
@@ -30,6 +31,13 @@ class TelegramBotController extends Controller
         }
 
         $chatId = $message->getChat()->getId();
+
+        // Если барбер загружает фото для обновления профиля
+        if ($message->has('photo')) {
+            $this->handlePhotoMessage($chatId, $message->getPhoto());
+            return response()->json(['status' => 'photo handled'], 200);
+        }
+
         $text = trim($message->getText());
 
         // Контакт — клиент
@@ -154,6 +162,7 @@ class TelegramBotController extends Controller
             'keyboard' => [
                 ['📋 Мои клиенты'],
                 ['🧑‍💼 Мой профиль'],
+                ['✏️ Изменить фото'],
                 ['🚪 Выйти'],
             ],
             'resize_keyboard' => true,
@@ -284,5 +293,58 @@ class TelegramBotController extends Controller
     {
         $phone = preg_replace('/\D/', '', $phone);
         return '7' . substr($phone, -10); // Пример: 77071234567
+    }
+
+    protected function handleChangePhotoCommand($chatId)
+    {
+        Cache::put("barber_waiting_photo_$chatId", true, now()->addMinutes(5)); // Запомним на 5 минут
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => '📷 Пожалуйста, отправьте новое фото профиля',
+        ]);
+    }
+
+    protected function handlePhotoMessage($chatId, $photo)
+    {
+        if (!Cache::get("barber_waiting_photo_$chatId")) {
+            return; // Никакой команды не было
+        }
+
+        $barber = Barber::where('telegram_chat_id', $chatId)->first();
+        if (!$barber) {
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => '❌ Профиль не найден',
+            ]);
+            return;
+        }
+
+        // Берем максимальное по качеству фото
+        $photoId = collect($photo)->last()['file_id'];
+
+        // Получаем файл Telegram
+        $file = $this->telegram->getFile(['file_id' => $photoId]);
+        $filePath = $file->getFilePath();
+        $url = "https://api.telegram.org/file/bot" . config('telegram.bots.mybot.token') . "/$filePath";
+
+        // Генерируем имя
+        $filename = uniqid() . '.jpg';
+        $savePath = public_path("uploads/barbers/$filename");
+
+        // Скачиваем и сохраняем
+        file_put_contents($savePath, file_get_contents($url));
+
+        // Обновляем запись в базе
+        $barber->photo = "uploads/barbers/$filename";
+        $barber->save();
+
+        // Удаляем из кэша
+        Cache::forget("barber_waiting_photo_$chatId");
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => '✅ Фото успешно обновлено!',
+        ]);
     }
 }
