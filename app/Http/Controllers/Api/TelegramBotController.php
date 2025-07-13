@@ -28,10 +28,13 @@ class TelegramBotController extends Controller
         $chatId = $message->getChat()->getId();
         $text = trim($message->getText());
 
-        if (preg_match('/^\d+$/', $text)) {
-            // Получаем записи по номеру телефона
+        if (preg_match('/^\+?\d{11,12}$/', $text)) {
+            $normalizedPhone = ltrim($text, '+'); // удаляем плюс
             $appointments = Appointment::with('services')
-                ->where('client_phone', $text)
+                ->where(function ($query) use ($text, $normalizedPhone) {
+                    $query->where('client_phone', $text)
+                        ->orWhere('client_phone', $normalizedPhone);
+                })
                 ->get();
 
             if ($appointments->isEmpty()) {
