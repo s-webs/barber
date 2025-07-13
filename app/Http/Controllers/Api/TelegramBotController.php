@@ -103,6 +103,10 @@ class TelegramBotController extends Controller
             return $this->sendBarberProfile($chatId, $barber);
         }
 
+        if ($text === '✏️ Изменить фото') {
+            return $this->handleChangePhotoCommand($chatId);
+        }
+
         if ($text === '🚪 Выйти') {
             $barber->update(['telegram_chat_id' => null]);
             $this->telegram->sendMessage([
