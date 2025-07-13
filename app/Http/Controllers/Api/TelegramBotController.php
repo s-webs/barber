@@ -123,6 +123,17 @@ class TelegramBotController extends Controller
                 $messageText .= "👤 {$appointment->client_name}\n";
                 $messageText .= "📞 {$appointment->client_phone}\n";
 
+                // Услуги
+                foreach ($appointment->services as $service) {
+                    $price = $service->pivot->price ?? '—';
+
+                    $messageText .= "🔹 {$service->name} — {$price}₸\n";
+                }
+
+                if ($appointment->comment) {
+                    $messageText .= "💬 {$appointment->comment}\n";
+                }
+
                 $messageText .= "────────────\n";
             }
 
