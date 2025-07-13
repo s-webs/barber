@@ -1,13 +1,26 @@
 @extends('layouts.booking')
 
 @section('content')
-    <div class="h-screen">
-        <div class="flex justify-center items-center h-full container mx-auto px-4">
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+        }
+        .full-screen-safe {
+            height: 100svh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+    <div class="full-screen-safe flex flex-col">
+        <div class="text-[12px] text-gray-400 text-center font-semibold border-b py-2">
+            <a href="https://s-webs.kz" target="_blank">Готовое решение для барбершопа S-WEBS</a>
+        </div>
+
+        <div class="flex-grow flex justify-center items-center px-4">
             <div
                 class="bg-[var(--color-halftone)] w-full max-w-3xl rounded-[15px] flex flex-col overflow-hidden">
-                <div class="text-[12px] text-gray-400 text-center font-semibold border-b py-[3px]">
-                    <a href="https://s-webs.kz" target="_blank">Готовое решение для барбершопа S-WEBS</a>
-                </div>
                 <div x-data="bookingForm()" x-init="init()" x-effect="step === 6 && initPhoneMask()"
                      class="flex flex-col flex-1 overflow-hidden relative">
 
