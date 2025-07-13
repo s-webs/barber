@@ -4,23 +4,24 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Barber;
 use Illuminate\Http\Request;
-use App\Services\TelegramBotService;
 use Illuminate\Support\Carbon;
+use Telegram\Bot\Api;
 use Telegram\Bot\Keyboard\Keyboard;
 
 class TelegramBotController extends Controller
 {
-    protected TelegramBotService $telegram;
+    protected Api $telegram;
 
-    public function __construct(TelegramBotService $telegram)
+    public function __construct()
     {
-        $this->telegram = $telegram;
+        $this->telegram = new Api(config('services.telegram.bot_token'));
     }
 
     public function webhook(Request $request)
     {
-        $update = $this->telegram->getUpdates();
+        $update = $this->telegram->getWebhookUpdate();
         $message = $update->getMessage();
 
         if (!$message) {
@@ -28,183 +29,242 @@ class TelegramBotController extends Controller
         }
 
         $chatId = $message->getChat()->getId();
-
-        // 📱 Контакт (пришел через кнопку "📱 Отправить номер")
-        if ($message->has('contact')) {
-            $phone = $message->getContact()->getPhoneNumber();
-            $formattedPhone = $this->formatPhoneLikeInDb($phone);
-            return $this->sendAppointments($chatId, $formattedPhone);
-        }
-
         $text = trim($message->getText());
 
-        // ✅ UUID авторизация для мастера
-        if (preg_match('/^[0-9a-fA-F\-]{36}$/', $text)) {
-            $barber = \App\Models\Barber::where('auth_token', $text)->first();
-
-            if ($barber) {
-                $barber->telegram_chat_id = $chatId;
-                $barber->save();
-
-                $this->telegram->sendMessage($chatId, "✅ Авторизация успешна! Добро пожаловать, {$barber->name}.");
-            } else {
-                $this->telegram->sendMessage($chatId, "❌ Неверный токен. Пожалуйста, проверьте и попробуйте снова.");
-            }
-
-            return response()->json(['status' => 'ok'], 200);
+        // Контакт — клиент
+        if ($message->has('contact')) {
+            $phone = $message->getContact()->getPhoneNumber();
+            return $this->handleClientPhone($chatId, $phone);
         }
 
-        // 🟢 Если текст похож на номер телефона
-        if (preg_match('/^\+?\d{10,12}$/', preg_replace('/\s+/', '', $text))) {
-            $formattedPhone = $this->formatPhoneLikeInDb($text);
-            return $this->sendAppointments($chatId, $formattedPhone);
+        // Проверка авторизации
+        $barber = Barber::where('telegram_chat_id', $chatId)->first();
+
+        // === Команды для барбера ===
+        if ($barber) {
+            return $this->handleBarberCommands($chatId, $text, $barber);
         }
 
-        // 📌 Кнопка "Записаться"
+        // === Команды для клиента ===
+        return $this->handleClientCommands($chatId, $text);
+    }
+
+    protected function handleClientCommands($chatId, $text)
+    {
         if ($text === '📌 Записаться') {
-            $this->telegram->sendMessage($chatId, 'Перейдите по ссылке: ' . route('booking.index'));
-            return response()->json(['status' => 'ok'], 200);
-        }
-
-        // 📅 Кнопка "Мои записи"
-        if ($text === '📅 Мои записи') {
-            $contactKeyboard = Keyboard::make([
-                'keyboard' => [
-                    [Keyboard::button([
-                        'text' => '📱 Отправить номер',
-                        'request_contact' => true,
-                    ])]
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true,
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Перейдите по ссылке: ' . route('booking.index'),
             ]);
-
-            $this->telegram->sendMessage($chatId, "Пожалуйста, отправьте свой номер телефона:", [
-                'reply_markup' => $contactKeyboard,
+        } elseif ($text === '📅 Мои записи') {
+            $this->sendPhoneRequestKeyboard($chatId);
+        } elseif ($text === '🧔 Авторизация для мастера') {
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Пожалуйста, отправьте ваш токен авторизации:',
             ]);
-            return response()->json(['status' => 'ok'], 200);
+        } elseif (preg_match('/^[a-f0-9\-]{36}$/', $text)) {
+            $barber = Barber::where('auth_token', $text)->first();
+            if ($barber) {
+                $barber->update(['telegram_chat_id' => $chatId]);
+                $this->telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => "Вы успешно авторизованы как мастер: {$barber->name}",
+                ]);
+            } else {
+                $this->telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => 'Неверный токен авторизации.',
+                ]);
+            }
+        } else {
+            $this->sendClientDefaultKeyboard($chatId);
         }
 
-        // 🧔 Кнопка "Авторизация для мастера"
-        if ($text === '🧔 Авторизация для мастера') {
-            $this->telegram->sendMessage($chatId, 'Пожалуйста, отправьте ваш токен авторизации:');
-            return response()->json(['status' => 'ok'], 200);
+        return response()->json(['status' => 'ok'], 200);
+    }
+
+    protected function handleBarberCommands($chatId, $text, Barber $barber)
+    {
+        if ($text === '📋 Мои клиенты') {
+            return $this->sendBarberAppointments($chatId, $barber);
         }
 
-        if ($text === '👥 Мои клиенты') {
-            $barber = \App\Models\Barber::where('telegram_chat_id', $chatId)->first();
+        if ($text === '🧑‍💼 Мой профиль') {
+            return $this->sendBarberProfile($chatId, $barber);
+        }
 
-            if (!$barber) {
-                $this->telegram->sendMessage($chatId, "❗ Вы не авторизованы. Нажмите 🧔 Авторизация для мастера и отправьте ваш токен.");
-                return response()->json(['status' => 'not authorized'], 200);
-            }
-
-            // Получим записи на сегодня
-            $today = now()->toDateString();
-
-            $appointments = \App\Models\Appointment::where('barber_id', $barber->id)
-                ->where('date', $today)
-                ->orderBy('time')
-                ->take(10)
-                ->get();
-
-            if ($appointments->isEmpty()) {
-                $this->telegram->sendMessage($chatId, "📭 На сегодня у вас нет записей.");
-                return response()->json(['status' => 'no clients'], 200);
-            }
-
-            $messageText = "👥 Ваши клиенты на *" . now()->format('d.m.Y') . "*:\n\n";
-
-            foreach ($appointments as $appointment) {
-                $date = \Carbon\Carbon::parse($appointment->date)->format('d.m.y');
-                $time = \Carbon\Carbon::parse($appointment->time)->format('H:i');
-
-                $messageText .= "📅 *{$date}* в 🕒 *{$time}*\n";
-                $messageText .= "👤 {$appointment->client_name}\n";
-                $messageText .= "📞 {$appointment->client_phone}\n";
-
-                // Услуги
-                foreach ($appointment->services as $service) {
-                    $price = $service->pivot->price ?? '—';
-
-                    $messageText .= "🔹 {$service->name} — {$price}₸\n";
-                }
-
-                if ($appointment->comment) {
-                    $messageText .= "💬 {$appointment->comment}\n";
-                }
-
-                $messageText .= "────────────\n";
-            }
-
-            $this->telegram->sendMessage($chatId, $messageText, [
-                'parse_mode' => 'Markdown'
+        if ($text === '🚪 Выйти') {
+            $barber->update(['telegram_chat_id' => null]);
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Вы вышли из аккаунта мастера.',
             ]);
-
-            return response()->json(['status' => 'ok'], 200);
+            $this->sendClientDefaultKeyboard($chatId);
+        } else {
+            $this->sendBarberDefaultKeyboard($chatId);
         }
 
-        // 👋 Стартовое сообщение и меню
+        return response()->json(['status' => 'ok'], 200);
+    }
+
+    protected function sendPhoneRequestKeyboard($chatId)
+    {
+        $keyboard = Keyboard::make([
+            'keyboard' => [
+                [Keyboard::button([
+                    'text' => '📱 Отправить номер',
+                    'request_contact' => true,
+                ])]
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => true,
+        ]);
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Пожалуйста, отправьте свой номер телефона:',
+            'reply_markup' => $keyboard,
+        ]);
+    }
+
+    protected function sendClientDefaultKeyboard($chatId)
+    {
         $keyboard = Keyboard::make([
             'keyboard' => [
                 ['📌 Записаться'],
                 ['📅 Мои записи'],
                 ['🧔 Авторизация для мастера'],
-                ['👥 Мои клиенты'],
             ],
             'resize_keyboard' => true,
             'one_time_keyboard' => false,
         ]);
 
-        $this->telegram->sendMessage(
-            $chatId,
-            "Привет! Чтобы посмотреть свои записи или авторизоваться как мастер, выберите нужный пункт меню ниже:",
-            ['reply_markup' => $keyboard]
-        );
-
-        return response()->json(['status' => 'ok'], 200);
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => "Привет! Вы можете записаться или посмотреть свои записи.",
+            'reply_markup' => $keyboard,
+        ]);
     }
 
-
-    private function sendAppointments($chatId, string $formattedPhone)
+    protected function sendBarberDefaultKeyboard($chatId)
     {
-        $appointments = Appointment::with('services')
-            ->where('client_phone', $formattedPhone)
-            ->get();
+        $keyboard = Keyboard::make([
+            'keyboard' => [
+                ['📋 Мои клиенты'],
+                ['🧑‍💼 Мой профиль'],
+                ['🚪 Выйти'],
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false,
+        ]);
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => "Привет! Вы авторизованы как мастер.",
+            'reply_markup' => $keyboard,
+        ]);
+    }
+
+    protected function handleClientPhone($chatId, $phone)
+    {
+        $formattedPhone = $this->formatPhoneLikeInDb($phone);
+        return $this->sendAppointments($chatId, $formattedPhone);
+    }
+
+    protected function sendAppointments($chatId, $phone)
+    {
+        $appointments = Appointment::where('client_phone', $phone)->orderBy('date')->get();
 
         if ($appointments->isEmpty()) {
-            $this->telegram->sendMessage($chatId, "Записей с номером {$formattedPhone} не найдено.");
-        } else {
-            $reply = "Ваши записи:\n\n";
-
-            foreach ($appointments as $appointment) {
-                $time = $appointment->time;
-                $date = Carbon::parse($appointment->date)->format('d.m.Y');
-                $status = $appointment->status;
-
-                $services = $appointment->services->map(function ($service) {
-                    return $service->name . " ({$service->pivot->price} тг, {$service->pivot->duration} мин)";
-                })->implode(", ");
-
-                $reply .= "📅 Дата: {$date}, время: {$time}\n";
-                $reply .= "📌 Статус: {$status}\n";
-                $reply .= "💈 Услуги: {$services}\n\n";
-            }
-
-            $this->telegram->sendMessage($chatId, $reply);
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Записей не найдено.',
+            ]);
+            return;
         }
 
-        return response()->json(['status' => 'ok'], 200);
+        $messageText = "*Ваши записи:*\n\n";
+        foreach ($appointments as $appointment) {
+            $date = \Carbon\Carbon::parse($appointment->date)->format('d.m.y');
+            $time = \Carbon\Carbon::parse($appointment->time)->format('H:i');
+            $messageText .= "📅 *{$date}* в 🕒 *{$time}*\n";
+            $messageText .= "👤 {$appointment->client_name}\n";
+            $messageText .= "📞 {$appointment->client_phone}\n";
+            $messageText .= "────────────\n";
+        }
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => $messageText,
+            'parse_mode' => 'Markdown',
+        ]);
     }
 
-    private function formatPhoneLikeInDb(string $input): string
+    protected function sendBarberAppointments($chatId, Barber $barber)
     {
-        $digits = preg_replace('/\D+/', '', $input);
+        $appointments = $barber->appointments()->whereDate('date', '>=', now())->orderBy('date')->get();
 
-        if (strlen($digits) === 11 && str_starts_with($digits, '7')) {
-            return '+7 ' . substr($digits, 1, 3) . ' ' . substr($digits, 4, 3) . ' ' . substr($digits, 7, 4);
+        if ($appointments->isEmpty()) {
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'У вас пока нет записей.',
+            ]);
+            return;
         }
 
-        return $input;
+        $messageText = "*Ваши клиенты:*\n\n";
+        foreach ($appointments as $appointment) {
+            $date = Carbon::parse($appointment->date)->format('d.m.y');
+            $time = Carbon::parse($appointment->time)->format('H:i');
+            $messageText .= "📅 *{$date}* в 🕒 *{$time}*\n";
+            $messageText .= "👤 {$appointment->client_name}\n";
+            $messageText .= "📞 {$appointment->client_phone}\n";
+
+            foreach ($appointment->services as $service) {
+                $messageText .= "▫️ {$service->name} ({$service->pivot->price}₸)\n";
+            }
+
+            $messageText .= "────────────\n";
+        }
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => $messageText,
+            'parse_mode' => 'Markdown',
+        ]);
+    }
+
+    protected function sendBarberProfile($chatId, Barber $barber)
+    {
+        $caption = "*Профиль мастера*\n\n";
+        $caption .= "👤 *{$barber->name}*\n";
+        $caption .= "📱 {$barber->phone}\n";
+        $caption .= "📍 Филиал: " . optional($barber->branch)->name . "\n";
+
+        if ($barber->photo) {
+            $photoUrl = asset('uploads/barbers/' . $barber->photo);
+
+            $this->telegram->sendPhoto([
+                'chat_id' => $chatId,
+                'photo' => $photoUrl,
+                'caption' => $caption,
+                'parse_mode' => 'Markdown',
+            ]);
+        } else {
+            $caption .= "🖼 Фото: _не загружено_";
+
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $caption,
+                'parse_mode' => 'Markdown',
+            ]);
+        }
+    }
+
+    protected function formatPhoneLikeInDb($phone)
+    {
+        $phone = preg_replace('/\D/', '', $phone);
+        return '7' . substr($phone, -10); // Пример: 77071234567
     }
 }
