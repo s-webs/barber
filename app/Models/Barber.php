@@ -32,6 +32,11 @@ class Barber extends Model
         });
     }
 
+    public function appointments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
     public function services(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Service::class);
