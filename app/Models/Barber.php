@@ -3,12 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Barber extends Model
 {
+    protected $fillable = [
+        'name',
+        'level',
+        'photo',
+        'socials',
+        'telegram_chat_id',
+        'phone',
+        'is_enabled',
+        'created_at',
+        'updated_at',
+        'branch_id'
+    ];
     protected $casts = [
         'socials' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function ($barber) {
+            if (empty($barber->auth_token)) {
+                $barber->auth_token = Str::uuid();
+            }
+        });
+    }
 
     public function services(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {

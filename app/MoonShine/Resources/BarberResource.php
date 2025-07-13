@@ -7,6 +7,7 @@ namespace App\MoonShine\Resources;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Barber;
 
+use Illuminate\Support\Str;
 use MoonShine\Laravel\Fields\Relationships\BelongsTo;
 use MoonShine\Laravel\Fields\Relationships\BelongsToMany;
 use MoonShine\Laravel\Fields\Relationships\HasMany;
@@ -21,6 +22,7 @@ use MoonShine\UI\Fields\Select;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
 use MoonShine\UI\Fields\Url;
+use Telegram\Bot\Keyboard\Button;
 
 /**
  * @extends ModelResource<Barber>
@@ -38,6 +40,9 @@ class BarberResource extends ModelResource
     {
         return [
             ID::make()->sortable(),
+            Text::make('Auth Token', 'auth_token')
+                ->readonly()
+            ->copy(),
             Image::make('Фото', 'photo'),
             BelongsTo::make('Салон', 'branch', 'name', resource: BranchResource::class),
             Text::make('Имя', 'name'),
@@ -55,6 +60,9 @@ class BarberResource extends ModelResource
         return [
             Box::make([
                 ID::make(),
+                Text::make('Auth Token', 'auth_token')
+                    ->readonly()
+                    ->copy(),
                 BelongsTo::make('Салон', 'branch', 'name', resource: BranchResource::class),
                 Text::make('Имя', 'name'),
                 Text::make('Уровень', 'level'),
