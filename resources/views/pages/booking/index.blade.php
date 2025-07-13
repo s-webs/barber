@@ -103,7 +103,7 @@
                                                     class="block w-full text-left px-4 py-2 border border-gray-300 rounded"
                                                 >
                                                     <div class="flex items-center">
-                                                        <img :src="barber.photo" class="w-10 h-10 rounded-full mr-3">
+                                                        <img :src="barber.photo" class="w-10 h-10 rounded-full mr-3 object-cover">
                                                         <span x-text="barber.name"></span>
                                                     </div>
                                                 </button>
@@ -126,8 +126,8 @@
                                                     class="block w-full text-left px-4 py-2 border border-gray-300 rounded"
                                                 >
                                                     <div class="flex justify-between items-center">
-                                                        <span x-text="service.name"></span>
-                                                        <span class="font-semibold"
+                                                        <span x-text="service.name" class=""></span>
+                                                        <span class="font-semibold shrink-0 ml-2"
                                                               x-text="service.price + ' ₸'"></span>
                                                     </div>
                                                 </button>
@@ -155,7 +155,7 @@
                                                     >
                                                         <div class="flex items-center">
                                                             <img :src="barber.photo"
-                                                                 class="w-10 h-10 rounded-full mr-3">
+                                                                 class="w-10 h-10 rounded-full mr-3 object-cover">
                                                             <span x-text="barber.name"></span>
                                                         </div>
                                                     </button>
