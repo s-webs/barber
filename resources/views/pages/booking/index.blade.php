@@ -7,6 +7,7 @@
             overflow: hidden;
             margin: 0;
         }
+
         .full-screen-safe {
             height: 100svh;
             padding-top: env(safe-area-inset-top);
@@ -319,10 +320,6 @@
                                 </button>
                             </template>
                         </div>
-                        <div class="text-sm text-gray-500 mt-2">
-                            Можно ли идти дальше? <span x-text="canProceed() ? 'Да' : 'Нет'"></span>
-                        </div>
-
                     </div>
                 </div>
             </div>
