@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\Public\HomeController::class, 'index'])->name('home.index');
+Route::get('/services/load', [\App\Http\Controllers\Public\HomeController::class, 'loadMore']);
+
 
 Route::get('/booking', [\App\Http\Controllers\Public\BookingController::class, 'index'])->name('booking.index');
 

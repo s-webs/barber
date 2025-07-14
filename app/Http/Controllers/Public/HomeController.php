@@ -15,4 +15,17 @@ class HomeController extends Controller
         $barbers = Barber::query()->where('is_enabled', '=', true)->get();
         return view('pages.home.index', compact('services', 'barbers'));
     }
+
+    public function loadMore(Request $request)
+    {
+        $offset = $request->query('offset', 0);
+        $limit = 3;
+
+        $services = Service::query()
+            ->skip($offset)
+            ->take($limit)
+            ->get();
+
+        return response()->json($services);
+    }
 }
