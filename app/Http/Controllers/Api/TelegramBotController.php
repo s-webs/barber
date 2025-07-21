@@ -74,12 +74,14 @@ class TelegramBotController extends Controller
             ]);
         } elseif ($text === '📅 Мои записи') {
             $this->sendPhoneRequestKeyboard($chatId);
-        } elseif ($text === '🧔 Авторизация для мастера') {
+        } // Обработка обеих кнопок авторизации
+        elseif ($text === '🧔 Авторизация для мастера' || $text === '👩‍💼 Авторизация для ресепшена') {
             $this->telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => 'Пожалуйста, отправьте ваш токен авторизации:',
             ]);
-        } elseif (preg_match('/^[a-f0-9\-]{36}$/', $text)) {
+        } // Проверка токена
+        elseif (preg_match('/^[a-f0-9\-]{36}$/', $text)) {
             // Проверка токена мастера
             $barber = \App\Models\Barber::where('auth_token', $text)->first();
             if ($barber) {
