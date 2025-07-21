@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Barber;
+use App\Models\Reception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -54,6 +55,12 @@ class TelegramBotController extends Controller
             return $this->handleBarberCommands($chatId, $text, $barber);
         }
 
+        $reception = Reception::where('telegram_chat_id', $chatId)->first();
+
+        if ($reception) {
+            return $this->handleReceptionCommands($chatId, $text, $reception);
+        }
+
         // === Команды для клиента ===
         return $this->handleClientCommands($chatId, $text);
     }
@@ -73,25 +80,42 @@ class TelegramBotController extends Controller
                 'text' => 'Пожалуйста, отправьте ваш токен авторизации:',
             ]);
         } elseif (preg_match('/^[a-f0-9\-]{36}$/', $text)) {
-            $barber = Barber::where('auth_token', $text)->first();
+            // Проверка токена мастера
+            $barber = \App\Models\Barber::where('auth_token', $text)->first();
             if ($barber) {
                 $barber->update(['telegram_chat_id' => $chatId]);
                 $this->telegram->sendMessage([
                     'chat_id' => $chatId,
                     'text' => "Вы успешно авторизованы как мастер: {$barber->name}",
                 ]);
-            } else {
+                $this->sendBarberDefaultKeyboard($chatId);
+                return response()->json(['status' => 'ok'], 200);
+            }
+
+            // Проверка токена ресепшена
+            $reception = \App\Models\Reception::where('auth_token', $text)->first();
+            if ($reception) {
+                $reception->update(['telegram_chat_id' => $chatId]);
                 $this->telegram->sendMessage([
                     'chat_id' => $chatId,
-                    'text' => 'Неверный токен авторизации.',
+                    'text' => "Вы авторизованы как ресепшен: {$reception->name}",
                 ]);
+                $this->sendReceptionDefaultKeyboard($chatId);
+                return response()->json(['status' => 'ok'], 200);
             }
+
+            // Если токен не найден
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Неверный токен авторизации.',
+            ]);
         } else {
             $this->sendClientDefaultKeyboard($chatId);
         }
 
         return response()->json(['status' => 'ok'], 200);
     }
+
 
     protected function handleBarberCommands($chatId, $text, Barber $barber)
     {
@@ -179,6 +203,25 @@ class TelegramBotController extends Controller
             'reply_markup' => $keyboard,
         ]);
     }
+
+    protected function sendReceptionDefaultKeyboard($chatId)
+    {
+        $keyboard = Keyboard::make([
+            'keyboard' => [
+                ['📅 Записи на сегодня'],
+                ['🚪 Выйти'],
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false,
+        ]);
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Вы вошли как ресепшен. Выберите действие:',
+            'reply_markup' => $keyboard,
+        ]);
+    }
+
 
     protected function handleClientPhone($chatId, $phone)
     {
@@ -365,4 +408,57 @@ class TelegramBotController extends Controller
             'text' => '✅ Фото успешно обновлено!',
         ]);
     }
+
+    protected function handleReceptionCommands($chatId, $text, \App\Models\Reception $reception)
+    {
+        if ($text === '📅 Записи на сегодня') {
+            $appointments = Appointment::with(['barber', 'services'])
+                ->where('date', now()->format('Y-m-d'))
+                ->whereHas('barber', fn($q) => $q->where('branch_id', $reception->branch_id))
+                ->orderBy('time')
+                ->get();
+
+            if ($appointments->isEmpty()) {
+                $this->telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => 'На сегодня записей нет.',
+                ]);
+                return response()->json(['status' => 'ok']);
+            }
+
+            $messageText = "*Записи на сегодня:*\n\n";
+
+            foreach ($appointments as $appointment) {
+                $time = Carbon::parse($appointment->time)->format('H:i');
+                $messageText .= "🕒 *{$time}* — {$appointment->client_name} ({$appointment->client_phone})\n";
+                $messageText .= "🧔 Мастер: " . optional($appointment->barber)->name . "\n";
+
+                foreach ($appointment->services as $service) {
+                    $messageText .= "▫️ {$service->name} ({$service->pivot->price}₸)\n";
+                }
+
+                $messageText .= "────────────\n";
+            }
+
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $messageText,
+                'parse_mode' => 'Markdown',
+            ]);
+        } elseif ($text === '🚪 Выйти') {
+            $reception->update(['telegram_chat_id' => null]);
+
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Вы вышли из аккаунта ресепшена.',
+            ]);
+
+            $this->sendClientDefaultKeyboard($chatId);
+        } else {
+            $this->sendReceptionDefaultKeyboard($chatId);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
 }

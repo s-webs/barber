@@ -23,4 +23,9 @@ class Branch extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function receptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Reception::class);
+    }
 }

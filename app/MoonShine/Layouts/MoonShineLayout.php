@@ -38,6 +38,7 @@ use App\MoonShine\Resources\BarberResource;
 use App\MoonShine\Resources\ColorResource;
 use App\MoonShine\Resources\BranchResource;
 use App\MoonShine\Resources\ScheduleResource;
+use App\MoonShine\Resources\ReceptionResource;
 
 final class MoonShineLayout extends AppLayout
 {
@@ -58,6 +59,7 @@ final class MoonShineLayout extends AppLayout
             MenuGroup::make('Настройки', [
                 MenuItem::make('Цвета', ColorResource::class),
             ]),
+            MenuItem::make('Рессепшен', ReceptionResource::class),
         ];
     }
 
