@@ -172,6 +172,7 @@ class TelegramBotController extends Controller
                 ['📌 Записаться'],
                 ['📅 Мои записи'],
                 ['🧔 Авторизация для мастера'],
+                ['👩‍💼 Авторизация для ресепшена'],
             ],
             'resize_keyboard' => true,
             'one_time_keyboard' => false,
