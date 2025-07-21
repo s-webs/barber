@@ -118,6 +118,9 @@ class BookingController extends Controller
         $currentTime = $workStart->copy();
         $endTime = $workEnd->copy()->subMinutes($totalDuration);
 
+        // Получаем текущее время с учетом часового пояса
+        $now = Carbon::now(config('app.timezone'));
+
         while ($currentTime->lte($endTime)) {
             // Правильное создание слота
             $slotStart = $date->copy()
@@ -127,15 +130,20 @@ class BookingController extends Controller
 
             $slotEnd = $slotStart->copy()->addMinutes($totalDuration);
 
+            // Проверяем, не прошло ли уже время слота (только для сегодняшнего дня)
+            $isPastSlot = $date->isToday() && $slotStart->lte($now);
+
             $hasConflict = false;
-            foreach ($appointments as $appointment) {
-                if ($slotStart->lt($appointment['end']) && $slotEnd->gt($appointment['start'])) {
-                    $hasConflict = true;
-                    break;
+            if (!$isPastSlot) {
+                foreach ($appointments as $appointment) {
+                    if ($slotStart->lt($appointment['end']) && $slotEnd->gt($appointment['start'])) {
+                        $hasConflict = true;
+                        break;
+                    }
                 }
             }
 
-            if (!$hasConflict) {
+            if (!$isPastSlot && !$hasConflict) {
                 $availableSlots[] = $slotStart->format('H:i');
             }
 
