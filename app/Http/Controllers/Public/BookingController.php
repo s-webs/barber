@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Barber;
 use App\Models\Branch;
+use App\Models\Reception;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Telegram\Bot\Api;
 
 class BookingController extends Controller
 {
@@ -217,10 +219,65 @@ class BookingController extends Controller
             ]);
         }
 
+        $this->sendAppointmentNotifications($appointment);
+
         return response()->json([
             'message' => 'Запись успешно создана!',
             'appointment' => $appointment
         ]);
+    }
+
+    protected function sendAppointmentNotifications(Appointment $appointment)
+    {
+        $telegram = new Api(config('services.telegram.bot_token'));
+
+        // Форматируем дату и время
+        $date = \Carbon\Carbon::parse($appointment->date)->format('d.m.Y');
+        $time = \Carbon\Carbon::parse($appointment->time)->format('H:i');
+
+        // Формируем сообщение
+        $message = "✅ *Новая запись!*\n\n";
+        $message .= "📅 *Дата:* $date\n";
+        $message .= "🕒 *Время:* $time\n";
+        $message .= "👤 *Клиент:* {$appointment->client_name}\n";
+        $message .= "📞 *Телефон:* `{$appointment->client_phone}`\n\n";
+        $message .= "🧔 *Мастер:* {$appointment->barber->name}\n";
+        $message .= "📍 *Филиал:* {$appointment->barber->branch->name}\n\n";
+        $message .= "💈 *Услуги:*\n";
+
+        foreach ($appointment->services as $service) {
+            $message .= "• {$service->name} - {$service->pivot->price}₸\n";
+        }
+
+        // Отправляем уведомление мастеру
+        if ($appointment->barber->telegram_chat_id) {
+            try {
+                $telegram->sendMessage([
+                    'chat_id' => $appointment->barber->telegram_chat_id,
+                    'text' => $message,
+                    'parse_mode' => 'Markdown',
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Ошибка отправки уведомления мастеру: " . $e->getMessage());
+            }
+        }
+
+        // Отправляем уведомление ресепшенам филиала
+        $receptions = Reception::where('branch_id', $appointment->barber->branch_id)
+            ->whereNotNull('telegram_chat_id')
+            ->get();
+
+        foreach ($receptions as $reception) {
+            try {
+                $telegram->sendMessage([
+                    'chat_id' => $reception->telegram_chat_id,
+                    'text' => $message,
+                    'parse_mode' => 'Markdown',
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Ошибка отправки уведомления ресепшену ID {$reception->id}: " . $e->getMessage());
+            }
+        }
     }
 
 }
